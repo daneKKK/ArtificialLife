@@ -154,6 +154,7 @@
     <ClInclude Include="Neuron.h" />
     <ClInclude Include="Pathfinding.h" />
     <ClInclude Include="PathfindingClasses.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
