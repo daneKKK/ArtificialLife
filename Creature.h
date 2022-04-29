@@ -15,18 +15,20 @@ private:
 	float oscillatorPeriod = 100;
 	float oscillatorOffset = 10;
 	float seed;
-	float* outputs;
+	bool actionTimer;
 	float countSeed() {
 		float* inputs = new float[firstLayerSize];
 		for (int i = 0; i < finalLayerSize; i++) {
 			inputs[i] = 0.5;
 		}
-		calculateOutput(inputs, firstLayerSize);
+		float* output;
+		calculateOutput(inputs, firstLayerSize, output);
 		float seedCalculated = 0;
 		for (int i = 0; i < finalLayerSize; i++) {
-			seedCalculated += outputs[i];
+			seedCalculated += output[i];
 		}
 		delete[] inputs;
+		delete[] output;
 		return (seedCalculated / 2) + 1 / 2;
 	}
 public:
@@ -69,8 +71,14 @@ public:
 	float getOscillatorOffset() {
 		return oscillatorOffset;
 	}
-	float* getOutputs() {
-		return outputs;
+	void changeEnergy(float change) {
+		energy += change;
+	}
+	bool getActionTimer() {
+		return actionTimer;
+	}
+	void setActionTimer(bool timer) {
+		actionTimer = timer;
 	}
 	void setLayerSizes(unsigned short firstLayerSizeInput, unsigned short internalLayerAmountInput, unsigned short internalLayerSizeInput,
 		unsigned short finalLayerSizeInput) {
@@ -156,8 +164,9 @@ public:
 			finalLayer[i]->offset = p->getFinalLayer()[i]->offset;
 		}
 		mutateBrain(mutationChance, mutationCoefficient);
+		actionTimer = false;
 	}
-	void calculateOutput(float* inputs, unsigned short inputSize) {
+	void calculateOutput(float* inputs, unsigned short inputSize, float* output) {
 		float* firstOutputs = new float[firstLayerSize];
 		float* innerOutputs = new float[internalLayerSize];
 		float* innerOutputsReplacer = new float[internalLayerSize];
@@ -183,7 +192,7 @@ public:
 		delete[] firstOutputs;
 		delete[] innerOutputs;
 		delete[] innerOutputsReplacer;
-		outputs = finalOutputs;
+		output = finalOutputs;
 	}
 	void deleteCreature() {
 		for (int i = 0; i < firstLayerSize; i++) {
