@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <random>
+#include <iostream>
 
 struct Neuron {
 	unsigned short amountOfInputs;
@@ -11,7 +12,7 @@ struct Neuron {
 
 void init(Neuron* nr, unsigned short inputs) {
 	nr->amountOfInputs = inputs;
-	nr->weights = new float(nr->amountOfInputs);
+	nr->weights = new float[nr->amountOfInputs];
 	for (int i = 0; i < inputs; i++) {
 		nr->weights[i] = 0;
 	}
@@ -19,16 +20,17 @@ void init(Neuron* nr, unsigned short inputs) {
 }
 
 void setRandomWeights(Neuron* nr, float maxWeight) {
+	srand((int)nr);
 	for (int i = 0; i < nr->amountOfInputs; i++) {
-		nr->weights[i] = (rand() - RAND_MAX / 2) * 2 / RAND_MAX * maxWeight;
+		nr->weights[i] = ((float)rand() - (float)RAND_MAX / 2) * 2 / RAND_MAX * maxWeight;
 	}
-	nr->offset = (rand() - RAND_MAX / 2) * 2 / RAND_MAX * maxWeight;
+	nr->offset = ((float)rand() - (float)RAND_MAX / 2) * 2 / RAND_MAX * maxWeight;
 }
 
 //output is sigma function from nr->amountOfInputs inputs (x_i) with given weights (w_i) and offsets (b_i);
 float calculate(Neuron* nr, unsigned short inputSize, float* inputs) {
 	float functionInput = nr->offset;
-	for (int i = 0; i < std::min(nr->amountOfInputs, inputSize), i++) {
+	for (int i = 0; i < std::min(nr->amountOfInputs, inputSize); i++) {
 		functionInput += inputs[i] * nr->weights[i];
 	}
 	float functionResult = 1 / (1 + std::exp(-1 * functionInput));
@@ -36,10 +38,10 @@ float calculate(Neuron* nr, unsigned short inputSize, float* inputs) {
 }
 
 bool mutate(float mutationChance) {
-	return (rand() / RAND_MAX < mutationChance);
+	return ((float)rand() / RAND_MAX < mutationChance);
 }
 float getMutation(float mutationCoefficient) {
-	return (((rand()) - RAND_MAX / 2) / RAND_MAX * 2 * mutationCoefficient);
+	return ((float)rand() - RAND_MAX / 2) / RAND_MAX * 2 * mutationCoefficient;
 }
 
 void mutateNeuron(Neuron* nr, float mutationChance, float mutationCoefficient) {

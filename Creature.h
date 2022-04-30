@@ -18,10 +18,10 @@ private:
 	bool actionTimer;
 	float countSeed() {
 		float* inputs = new float[firstLayerSize];
-		for (int i = 0; i < finalLayerSize; i++) {
+		for (int i = 0; i < firstLayerSize; i++) {
 			inputs[i] = 0.5;
 		}
-		float* output;
+		float* output = new float[3];
 		calculateOutput(inputs, firstLayerSize, output);
 		float seedCalculated = 0;
 		for (int i = 0; i < finalLayerSize; i++) {
@@ -90,24 +90,29 @@ public:
 	void setNeuronArrays(unsigned short totalInputsAmount, float maxWeight) {
 		firstLayer = new Neuron*[firstLayerSize];
 		internalLayers = new Neuron** [internalLayerAmount];
+		finalLayer = new Neuron * [finalLayerSize];
 		for (int i = 0; i < internalLayerAmount; i++) {
 			internalLayers[i] = new Neuron * [internalLayerSize];
 		}
 		for (int i = 0; i < firstLayerSize; i++) {
+			firstLayer[i] = new Neuron();
 			init(firstLayer[i], totalInputsAmount);
 			setRandomWeights(firstLayer[i], maxWeight);
 		}
 		for (int i = 0; i < internalLayerSize; i++) {
+			internalLayers[0][i] = new Neuron();
 			init(internalLayers[0][i], firstLayerSize);
 			setRandomWeights(internalLayers[0][i], maxWeight);
 		}
 		for (int i = 1; i < internalLayerAmount; i++) {
-			for (int j = 0; i < internalLayerSize; j++) {
+			for (int j = 0; j < internalLayerSize; j++) {
+				internalLayers[i][j] = new Neuron();
 				init(internalLayers[i][j], internalLayerSize);
 				setRandomWeights(internalLayers[i][j], maxWeight);
 			}
 		}
 		for (int i = 0; i < finalLayerSize; i++) {
+			finalLayer[i] = new Neuron();
 			init(finalLayer[i], internalLayerSize);
 			setRandomWeights(finalLayer[i], maxWeight);
 		}
@@ -150,8 +155,8 @@ public:
 			internalLayers[0][i]->offset = p->getInternalLayer()[0][i]->offset;
 		}
 		for (int i = 1; i < internalLayerAmount; i++) {
-			for (int j = 0; i < internalLayerSize; j++) {
-				for (int k = 0; j < internalLayerSize; k++) {
+			for (int j = 0; j < internalLayerSize; j++) {
+				for (int k = 0; k < internalLayerSize; k++) {
 					internalLayers[i][j]->weights[k] = p->getInternalLayer()[i][j]->weights[k];
 				}
 				internalLayers[i][j]->offset = p->getInternalLayer()[i][j]->offset;
@@ -188,11 +193,13 @@ public:
 		}
 		for (int i = 0; i < finalLayerSize; i++) {
 			finalOutputs[i] = calculate(finalLayer[i], (unsigned short)internalLayerSize, innerOutputs);
+			output[i] = finalOutputs[i];
 		}
 		delete[] firstOutputs;
 		delete[] innerOutputs;
 		delete[] innerOutputsReplacer;
-		output = finalOutputs;
+		delete[] finalOutputs;
+
 	}
 	void deleteCreature() {
 		for (int i = 0; i < firstLayerSize; i++) {
@@ -201,7 +208,7 @@ public:
 		}
 		delete[] firstLayer;
 		for (int i = 0; i < internalLayerAmount; i++) {
-			for (int j = 0; i < internalLayerSize; j++) {
+			for (int j = 0; j < internalLayerSize; j++) {
 				delete[] internalLayers[i][j]->weights;
 				delete internalLayers[i][j];
 			}
