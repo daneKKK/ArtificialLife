@@ -35,10 +35,15 @@ private:
 	void changeEnergyDistribution(int timer) {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				energyDistribution[i][j] = 1.3 * pow(std::cos((timer + i) * std::acos(-1) / width), 2);
-				if (timer > 150) {
-					energyDistribution[i][j] = (float)0;
+				energyDistribution[i][j] = 1.65 + 1.0 * std::cos((timer * 0.1 + i) * 2 * std::acos(-1) / width);
+				if ((timer % 1000 > 500)&&(timer > 1000)) {
+					energyDistribution[i][j] -= 1.3 * std::pow(std::sin((j) * std::acos(-1) / 200), 5);
 				}
+				//std::cout << "a" << std::endl;
+				/*if (timer >= 100) {
+					energyDistribution[i][j] = (float)-1;
+					std::cout << " ada" << std::endl;
+				}*/
 			}
 		}
 	}
@@ -75,7 +80,7 @@ private:
 		int counter = 0;
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
-				inputs[counter] = energyDistribution[getX(x + i)][getY(y + j)];
+				inputs[counter] = energyDistribution[getX(x + i)][getY(y + j)] / maxEnergy;
 				counter++;
 			}
 		}
@@ -83,7 +88,7 @@ private:
 			for (int j = -1; j < 2; j++) {
 				if ((j != 0) || (i != 0)) {
 					if (map[getX(x + i)][getY(y + j)] != NULL) {
-						inputs[counter] = map[getX(x + i)][getY(y + j)]->getSeed();
+						inputs[counter] = map[getX(x + i)][getY(y + j)]->getSeed() - map[x][y]->getSeed();
 					}
 					else {
 						inputs[counter] = 0;
@@ -141,7 +146,8 @@ public:
 					if (map[i][j]->getActionTimer()) {
 						continue;
 					}
-					map[i][j]->changeEnergy(-1);
+					map[i][j]->setEnergy(map[i][j]->getEnergy() - 1);
+					map[i][j]->setEnergy(energyDistribution[i][j] + map[i][j]->getEnergy());
 					if (map[i][j]->getEnergy() <= 0) {
 						map[i][j]->deleteCreature();
 						delete map[i][j];
@@ -150,15 +156,22 @@ public:
 					}
 					float* output = new float[3];
 					takeOrder(dx, dy, birth, output, i, j, timer);
-					map[i][j]->changeEnergy(energyDistribution[i][j]);
-					if ((dx != 0) || (dy != 0)) {
+					
+					if ((*dx != 0) || (*dy != 0)) {
 						if ((birth)&& (map[getX(i + *dx)][getY(j + *dy)] == NULL)) {
 							map[getX(i + *dx)][getY(j + *dy)] = new Creature(maxEnergy, map[i][j]->getFirstLayerSize(),
 								map[i][j]->getInternalLayerAmount(), map[i][j]->getInternalLayerSize(), map[i][j]->getFinalLayerSize(),
 								map[i][j]->getFirstLayer()[0]->amountOfInputs, maxWeight);
 							map[getX(i + *dx)][getY(j + *dy)]->becomeChild(map[i][j], mutationChance, mutationCoefficient);
-							map[i][j]->setEnergy(map[i][j]->getEnergy() / 2);
+							map[i][j]->setEnergy(map[i][j]->getEnergy() / 2 * 0.9 - 1);
 							map[getX(i + *dx)][getY(j + *dy)]->setEnergy(map[i][j]->getEnergy());
+							map[getX(i + *dx)][getY(j + *dy)]->setActionTimer(true);
+							if (map[i][j]->getEnergy() <= 0) {
+								map[i][j]->deleteCreature();
+								delete map[i][j];
+								map[i][j] = NULL;
+								continue;
+							}
 						}
 						else {
 							if (map[getX(i + *dx)][getY(j + *dy)] == NULL) {
@@ -167,14 +180,24 @@ public:
 								map[getX(i + *dx)][getY(j + *dy)]->setActionTimer(true);
 							}
 							else {
-								map[i][j]->changeEnergy(std::min(energyDistribution[getX(i + *dx)][getY(j + *dy)],
-									map[getX(i + *dx)][getY(j + *dy)]->getEnergy())*0.8);
-								map[getX(i + *dx)][getY(j + *dy)]->setEnergy(-1 * std::max(map[getX(i + *dx)][getY(j + *dy)]->getEnergy() - energyDistribution[getX(i + *dx)][getY(j + *dy)], (float)0));
+								map[i][j]->setEnergy(map[getX(i + *dx)][getY(j + *dy)]->getEnergy() / 2 * 0.8 + map[i][j]->getEnergy());
+								map[getX(i + *dx)][getY(j + *dy)]->setEnergy(map[getX(i + *dx)][getY(j + *dy)]->getEnergy() / 2 - 0.5);
+								if (map[getX(i + *dx)][getY(j + *dy)]->getEnergy() <= 0) {
+									map[getX(i + *dx)][getY(j + *dy)]->deleteCreature();
+									delete map[getX(i + *dx)][getY(j + *dy)];
+									map[getX(i + *dx)][getY(j + *dy)] = NULL;
+								}
+							}
+							if (map[i][j]->getEnergy() <= 0) {
+								map[i][j]->deleteCreature();
+								delete map[i][j];
+								map[i][j] = NULL;
+								continue;
 							}
 						}
 					}
 					delete[] output;
-					map[i][j]->setEnergy(std::max(maxEnergy, map[i][j]->getEnergy()));
+					map[i][j]->setEnergy(std::min(maxEnergy, map[i][j]->getEnergy()));
 				}
 			}
 		}

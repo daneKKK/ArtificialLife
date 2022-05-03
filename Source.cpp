@@ -15,11 +15,21 @@ int main(void)
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
-    World world(screenWidth / 6, screenHeight / 4, 10, 0.5, 3, 2);
+    const int width = screenWidth / 6;
+    const int height = screenHeight / 4;
+    const float maxEnergy = 5;
+    const int firstLayerSize = 4;
+    const int internalLayerAmount = 1;
+    const int internalLayerSize = 1;
+    const int finalLayerSize = 3;
+    const int inputsAmount = 19;
+    const float maxWeight = 2;
+
+    World world(screenWidth / 6, screenHeight / 4, 5, 0.2, 0.1, 2);
     Creature* adam;
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
-            adam = new Creature(10, 4, 1, 4, 3, 19, 2);
+            adam = new Creature(maxEnergy, firstLayerSize, internalLayerAmount, internalLayerSize, finalLayerSize, inputsAmount, maxWeight);
             world.placeCreature(adam, 1 + i * 19, 1 + j * 19);
         }
     }
@@ -35,8 +45,8 @@ int main(void)
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
         //----------------------------------------------------------------------------------
-        world.step(timer);
         timer++;
+        world.step(timer);
         map = world.getMap();
         /*totalEnergy = 0;
         for (int i = 0; i < screenWidth / 6; i++) {
@@ -47,7 +57,6 @@ int main(void)
             }
         }
         std::cout << totalEnergy << std::endl;*/
-        std::cout << world.getEnergy(0, 0) << std::endl;
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();

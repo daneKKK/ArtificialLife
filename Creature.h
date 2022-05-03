@@ -1,6 +1,7 @@
 #pragma once
 #include "Neuron.h"
 #include <random>
+#include <iostream>
 
 class Creature {
 private:
@@ -25,7 +26,7 @@ private:
 		calculateOutput(inputs, firstLayerSize, output);
 		float seedCalculated = 0;
 		for (int i = 0; i < finalLayerSize; i++) {
-			seedCalculated += output[i];
+			seedCalculated += output[i] / 3;
 		}
 		delete[] inputs;
 		delete[] output;
